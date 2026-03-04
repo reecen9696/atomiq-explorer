@@ -49,9 +49,9 @@ const getApiBaseUrl = () => {
 
   // Default URLs based on environment
   if (import.meta.env.PROD) {
-    return "https://165-232-157-84.nip.io";
+    return "https://api.atomiq.network";
   } else {
-    return "http://165.232.157.84:8080";
+    return "http://localhost:8080";
   }
 };
 
