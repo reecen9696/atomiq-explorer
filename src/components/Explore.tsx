@@ -187,7 +187,7 @@ const Explore: React.FC = () => {
             <p className="text-lg font-medium font-aeonik text-white">
               {statsLoading
                 ? "Loading..."
-                : formatSolAmount(stats?.total_wagered || 0)}
+                : formatAmount(stats?.total_wagered || 0)}
             </p>
           </div>
           <h3 className="text-sm font-aeonik text-gray-400">Total Wagered</h3>
