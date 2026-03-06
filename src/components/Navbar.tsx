@@ -79,7 +79,7 @@ const Navbar: React.FC = () => {
                   rel="noopener noreferrer"
                   className="py-1 text-base font-aeonik font-medium text-white hover:text-gray-300 transition-colors"
                 >
-                  Play
+                  Casino
                 </a>
               </div>
             </div>
@@ -88,7 +88,7 @@ const Navbar: React.FC = () => {
           {/* Desktop Right Section - Social Icons */}
           <div className="hidden md:flex items-center">
             <a
-              href="https://x.com/TheAtomicChain"
+              href="https://x.com/TheAtomiqChain"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white hover:text-gray-300 transition-colors"
@@ -213,14 +213,14 @@ const Navbar: React.FC = () => {
                 onClick={closeMobileMenu}
                 className="block text-2xl font-aeonik font-medium text-white/70 hover:text-white"
               >
-                Play
+                Casino
               </a>
             </div>
 
             {/* Bottom section with social */}
             <div>
               <a
-                href="https://x.com/TheAtomicChain"
+                href="https://x.com/TheAtomiqChain"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white hover:text-gray-300 transition-colors"

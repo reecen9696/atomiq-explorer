@@ -1,6 +1,7 @@
 import type {
   StatsResponse,
   PaginatedBets,
+  BetRecord,
   BetResponse,
   FlipRequest,
   BetRequest,
@@ -150,30 +151,89 @@ class BlockchainCasinoApi {
   }
 
   /**
-   * Get casino statistics
+   * Get casino statistics (combines /api/casino/stats + /status for current block)
    */
   async getStats(): Promise<StatsResponse> {
-    return this.request<StatsResponse>("/v1/stats");
+    const [statsResult, statusResult] = await Promise.allSettled([
+      this.request<{
+        total_wagered: number;
+        gross_rtp: number;
+        bet_count: number;
+        bankroll: number;
+        wins_24h: number;
+        wagered_24h: number;
+      }>("/api/casino/stats"),
+      this.request<{
+        sync_info: { latest_block_height: number };
+      }>("/status"),
+    ]);
+
+    const stats = statsResult.status === "fulfilled" ? statsResult.value : null;
+    const status = statusResult.status === "fulfilled" ? statusResult.value : null;
+
+    if (!stats && statsResult.status === "rejected") {
+      throw statsResult.reason;
+    }
+
+    return {
+      current_block: status?.sync_info?.latest_block_height ?? 0,
+      total_bets: stats?.bet_count ?? 0,
+      total_wagered: stats?.total_wagered ?? 0,
+      total_won: 0,
+      gross_rtp: stats?.gross_rtp ?? 0,
+      house_edge: 0,
+    };
   }
 
   /**
-   * Get paginated bet history
+   * Get paginated bet history from /api/games/recent
    */
   async getBets(
     limit: number = 20,
-    offset: number = 0,
-    wallet?: string
+    _offset: number = 0,
+    _wallet?: string
   ): Promise<PaginatedBets> {
-    const params = new URLSearchParams({
-      limit: limit.toString(),
-      offset: offset.toString(),
-    });
+    const response = await this.request<{
+      games: Array<{
+        game_id: string;
+        tx_id: number;
+        player_id: string;
+        game_type: string;
+        token: string;
+        bet_amount: number;
+        payout: number;
+        outcome: string;
+        coin_result: string;
+        player_choice: unknown;
+        vrf_proof: string;
+        vrf_output: string;
+        timestamp: number;
+        block_height: number;
+        processed: boolean;
+      }>;
+      next_cursor?: string;
+    }>(`/api/games/recent?limit=${limit}`);
 
-    if (wallet) {
-      params.append("wallet", wallet);
-    }
+    const bets: BetRecord[] = (response.games ?? []).map((game) => ({
+      tx_hash: game.game_id,
+      block: game.block_height,
+      amount_wagered: game.bet_amount,
+      won: game.outcome === "win",
+      result: game.outcome,
+      payout: game.payout,
+      timestamp: game.timestamp,
+      game_type: String(game.game_type),
+      vrf_proof: game.vrf_proof ?? "",
+      vrf_output: game.vrf_output ?? "",
+    }));
 
-    return this.request<PaginatedBets>(`/v1/bets?${params}`);
+    return {
+      bets,
+      total_count: bets.length,
+      has_more: response.next_cursor != null,
+      page: 1,
+      per_page: limit,
+    };
   }
 
   /**
