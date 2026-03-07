@@ -8,7 +8,6 @@ import {
   transformBetRecord,
   createLoadingSkeleton,
   formatNumberWithCommas,
-  formatSolAmount,
   copyToClipboard,
 } from "../utils/dataTransforms";
 
